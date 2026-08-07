@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+
+import sys
+import base64
+import re
+import argparse as ap
+import random
+import string
+
+def test():
+    no = "op"
+
+def getfunc(line):
+    function = re.search(r"^def .*\(.*\):", line)
+
+    if function:
+        functionname = re.split(r'def |\(', function.group())
+        return functionname[1]
+    else:
+        return None
+
+def getvar(line):
+    variable = re.search(r"\w+ = ", line)
+
+    if variable:
+        variablename = re.split(r' = ', variable.group())
+        return variablename[0]
+    else:
+        return None
+
+def main():
+    parser = ap.ArgumentParser()
+
+    parser.add_argument('-i', '--input', required=True)
+    parser.add_argument('-o', '--output', required=True)
+    args = parser.parse_args()
+
+    print(f"INPUT: {args.input}, OUTPUT: {args.output}")
+
+    functionstoreplace = {}
+    vartionstoreplace = {}
+
+    with open(args.input, 'r', encoding="utf-8") as file:
+        for line in file:
+            thefunction = getfunc(line)
+
+            if thefunction:
+                length = 8
+                newfunc = ''.join(
+                    random.choices(
+                        string.ascii_letters, k=length)).strip()
+                functionstoreplace[thefunction.strip()] = newfunc
+
+            thevartion = getvar(line)
+
+            if thevartion:
+                length = 8
+                newvar = ''.join(
+                    random.choices(
+                        string.ascii_letters, k=length)).strip()
+                vartionstoreplace[thevartion.strip()] = newvar
+
+    with open(args.input, 'r') as file:
+        file_content = file.read()
+
+    print(functionstoreplace)
+    print(vartionstoreplace)
+    for k, v in functionstoreplace.items():
+        print(f"{k}: {v}")
+        file_content = file_content.replace(k + '(', v + '(')
+
+    for k, v in vartionstoreplace.items():
+        print(f"{k}: {v}")
+        file_content = file_content.replace(f' {k} = ', f' {v} = ')
+        file_content = file_content.replace(f'({k})', f'({v})')
+        file_content = file_content.replace(f'[{k}', f'[{v}')
+        file_content = file_content.replace(f' {k} ', f' {v} ')
+        file_content = file_content.replace(f' {k}.', f' {v}.')
+        file_content = file_content.replace(f'({k}.', f'({v}.')
+        file_content = file_content.replace(f'{{{k}.', f'{{{v}.')
+        file_content = file_content.replace(f'{k}[', f'{v}[')
+        file_content = file_content.replace(f'= {k}', f'= {v}')
+        file_content = file_content.replace(f'={k}', f'={v}')
+        file_content = file_content.replace(f' {k}:', f' {v}:')
+        file_content = file_content.replace('{' + k + '}', '{' + v + '}')
+
+    file_content = file_content.replace('\n\n', '\n')
+    file_content = file_content.replace('    ', '\t\t\t\t\t\t\t\t')
+
+    with open(args.output, "w", encoding="utf-8") as file:
+        file.write(file_content)
+
+if __name__ == "__main__":
+    main()
