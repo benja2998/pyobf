@@ -1,2 +1,2 @@
 * pyobf
-python obfuscator
+I just wrote this because I wanted to learn Python, but it should do a good enough job of actually obfuscating Python code.
