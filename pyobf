@@ -37,7 +37,7 @@ def test():
     no = "op"
 
 def getfunc(line):
-    function = re.search(r"^def .*\(.*\):", line)
+    function = re.search(r"^def .*?\(.*?\):", line)
 
     if function:
         functionname = re.split(r'def |\(', function.group())
@@ -52,7 +52,12 @@ def getvar(line):
         variablename = re.split(r' = ', variable.group())
         return variablename[0]
     else:
-        return None
+        variable = re.search(r"def .*?\(.*?\):", line)
+        if variable:
+            variablename = re.split(r'\(|\)', variable.group())
+            return variablename[1]
+        else:
+            return None
 
 def main():
     parser = ap.ArgumentParser()
@@ -106,8 +111,10 @@ def main():
         file_content = file_content.replace(f'{{{k}.', f'{{{v}.')
         file_content = file_content.replace(f'{k}[', f'{v}[')
         file_content = file_content.replace(f'= {k}', f'= {v}')
+        file_content = file_content.replace(f'{k} = ', f'{v} = ')
         file_content = file_content.replace(f'={k}', f'={v}')
         file_content = file_content.replace(f' {k}:', f' {v}:')
+        file_content = file_content.replace(f'return {k}', f'return {v}')
         file_content = file_content.replace('{' + k + '}', '{' + v + '}')
 
     file_content = file_content.replace('\n\n', '\n')
